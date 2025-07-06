@@ -27,7 +27,7 @@ module.exports = {
                     .replace("{replitLink}", replitLink)
                     .replace("{youtubeLink}", youtubeLink)
                 )
-                .setImage('https://cdn.discordapp.com/attachments/1113800537402527903/1236803979996958740/11.png?ex=663956f7&is=66380577&hm=3b3c19a11adcb979517a133f2907f671305d23f1f5092cf7df043e6d5cab07bc&')
+                .setImage('https://cdn.discordapp.com/attachments/1355192667876622376/1391364134863372319/standard.gif?ex=686ba054&is=686a4ed4&hm=26f0b6a856ae95f0d94a9d9f30ea89650e041d8361fe52abdfb1ed919c326eec&')
                 .setTimestamp();
 
             await interaction.reply({ embeds: [embed] });
