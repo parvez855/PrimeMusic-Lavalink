@@ -9,8 +9,9 @@ module.exports = {
   options: [],
   run: async (client, interaction, lang) => {
     try {
+      // Defer the reply to prevent timeout error
       const start = Date.now();
-      await interaction.reply(lang.ping.response);
+      await interaction.deferReply();
 
       const end = Date.now();
       const latency = end - start;
@@ -31,15 +32,28 @@ module.exports = {
         .setFooter({ text: lang.ping.embed.footer, iconURL: musicIcons.heartIcon })
         .setTimestamp();
 
-      return interaction.editReply({ content: null, embeds: [embed] }).catch(e => {
-        console.error(e);
-      });
+      // Edit the deferred reply with the embed
+      await interaction.editReply({ embeds: [embed] });
+
     } catch (e) {
-      console.error(e);
+      console.error("❌ Ping command error:", e);
+
+      // Try to send a fallback error message
+      if (!interaction.replied && !interaction.deferred) {
+        try {
+          await interaction.reply({
+            content: "❌ An error occurred while checking the bot's ping.",
+            ephemeral: true
+          });
+        } catch (err) {
+          console.error("❌ Failed to send error message:", err);
+        }
+      }
     }
   },
 };
 
+// Helper function to format uptime
 function formatUptime(uptime) {
   const seconds = Math.floor((uptime / 1000) % 60);
   const minutes = Math.floor((uptime / (1000 * 60)) % 60);
