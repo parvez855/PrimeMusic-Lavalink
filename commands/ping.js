@@ -1,6 +1,4 @@
 const { EmbedBuilder } = require('discord.js');
-const config = require("../config.js");
-const musicIcons = require('../UI/icons/musicicons.js');
 
 module.exports = {
   name: "ping",
@@ -9,56 +7,38 @@ module.exports = {
   options: [],
   run: async (client, interaction, lang) => {
     try {
-      // Defer the reply to prevent timeout error
-      const start = Date.now();
+      // Defer the reply if any delay is expected
       await interaction.deferReply();
 
-      const end = Date.now();
-      const latency = end - start;
-      const websocketPing = client.ws.ping;
+      // Calculate latency
+      const ping = Date.now() - interaction.createdTimestamp;
 
+      // Create embed message
       const embed = new EmbedBuilder()
-        .setColor(config.embedColor)
-        .setAuthor({
-          name: lang.ping.embed.title,
-          iconURL: musicIcons.pingIcon,
-          url: "https://discord.gg/xQF9f9yUEM"
-        })
-        .setDescription(
-          `${lang.ping.embed.responseTime.replace("{latency}", latency)}
-          \n${lang.ping.embed.websocketPing.replace("{ping}", websocketPing)}
-          \n${lang.ping.embed.uptime.replace("{uptime}", formatUptime(client.uptime))}`
-        )
-        .setFooter({ text: lang.ping.embed.footer, iconURL: musicIcons.heartIcon })
-        .setTimestamp();
+        .setTitle("🏓 Pong!")
+        .setColor("Green")
+        .addFields(
+          { name: "Bot Latency", value: `${ping}ms`, inline: true },
+          { name: "API Latency", value: `${client.ws.ping}ms`, inline: true }
+        );
 
-      // Edit the deferred reply with the embed
+      // Send response after deferring
       await interaction.editReply({ embeds: [embed] });
 
-    } catch (e) {
-      console.error("❌ Ping command error:", e);
+    } catch (error) {
+      console.error("Ping command error:", error);
 
-      // Try to send a fallback error message
-      if (!interaction.replied && !interaction.deferred) {
+      // Attempt to send error to user if possible
+      if (!interaction.replied) {
         try {
           await interaction.reply({
-            content: "❌ An error occurred while checking the bot's ping.",
-            ephemeral: true
+            content: "❌ An error occurred while executing this command.",
+            ephemeral: true,
           });
-        } catch (err) {
-          console.error("❌ Failed to send error message:", err);
+        } catch (innerErr) {
+          console.error("Failed to reply to interaction error:", innerErr);
         }
       }
     }
   },
 };
-
-// Helper function to format uptime
-function formatUptime(uptime) {
-  const seconds = Math.floor((uptime / 1000) % 60);
-  const minutes = Math.floor((uptime / (1000 * 60)) % 60);
-  const hours = Math.floor((uptime / (1000 * 60 * 60)) % 24);
-  const days = Math.floor(uptime / (1000 * 60 * 60 * 24));
-
-  return `${days}d ${hours}h ${minutes}m ${seconds}s`;
-}
